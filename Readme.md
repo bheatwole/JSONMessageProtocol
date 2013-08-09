@@ -11,36 +11,19 @@ The protocol uses [JSON Schema](http://json-schema.org/) v4 to validate the stru
 The protocol includes validation of the sender and basic remote procedure call sematics. Below is a sample message:
 
 	{
-		s: "FV52Ijasd5S2a",
-		x: "cbe2f6fab8e5ace536c1703468293da415f7c74731b6ac44b9da5a4dc2aea8ed",
 		v: "1.0",
-		m: {
-			t: 1376057995702715595,
-			i: "425i9a98SGS9aD",
-			r: 1256390734534,
-			f: "com.jmp.user.create",
-			d: {
-				username: "wwonka",
-				display: "Willy Wonka",
-				email: "wwonka@wonka-factory.com",
-			},
+		t: 1376057995702715595,
+		i: "425i9a98SGS9aD",
+		r: 1256390734534,
+		f: "com.jmp.user.create",
+		d: {
+			username: "wwonka",
+			display: "Willy Wonka",
+			email: "wwonka@wonka-factory.com",
 		},
 	}
 
 The elements to this message are as follows:
-
-### s: Session ID
-The session ID is used to identify who has sent the message. For messages where the user has not yet been authenticated,
-where the sender is not important or the underlying transport establishes the identity (websockets, etc), the session ID
-may be omitted.
-
-### x: Signature
-The SHA256 checksum of the 'm' component of the message (using the exact bytes sent to the transport) concatentated with
-a pre-agreed 'secret'. This is useful when the message is sent over an unsecured transport and you need to validate that
-the sender is truly who they claim to be. Establishing the 'secret' can be accomplished in a number of methods, but if
-the secret is also established over an unsecure transport, it should use a method similar to the [Diffie–Hellman–Merkle
-key exchange](http://en.wikipedia.org/wiki/Diffie%E2%80%93Hellman_key_exchange). If the signature is used, the timestamp
-(t) field must also be specified.
 
 ### v: Version
 The version of this protocol. Message may also have a version number inside the data (d) field, but this version number
@@ -73,12 +56,6 @@ and route to use when passing the message on. This field may be an integer or a 
 An optional object that defines any function-specific parameters for the message. This field may be large depending upon
 the data being transmitted. It will be validated against the schema retrieved when looking up the route for the function
 (f) field.
-
-## Security
-If you care whether or not the contents of the message can be read, pass the message over a secure transport (SSL, VPN,
-internal network, in-memory pipe, etc). If you do not care about the contents, but still need to verify the authenticity
-of the sender, establish a shared secret in some manner and use the signature (x) field. The need for this should be
-quite rare since secure transports are easy to come by these days.
 
 ## Schema
 Below is the actual JSON-Schema used to validate the root message.
