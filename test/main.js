@@ -9,11 +9,13 @@ describe('JSONMessageProtocol', function() {
 		});
 	});
 	
+	var MessageHandler = JMP.MessageHandler;
+	
 	describe('MessageHandler', function() {
 		describe('constructor', function() {
 			it("should take an 'options' parameter and return an object containing a HandleMessage function and the options", function() {
 				// The constructor should take one parameter
-				assert.equal(JMP.MessageHandler.length, 1);
+				assert.equal(MessageHandler.length, 1);
 				
 				var handler = new JMP.MessageHandler({
 					'router': true,
@@ -34,48 +36,52 @@ describe('JSONMessageProtocol', function() {
 				assert(handler.options.junk);
 			});
 			it('should throw an exception if the "router" parameter is null or undefined', function() {
-				assert.throws(
-					var handler = new JMP.MessageHandler({
-						// don't provide this: 'router': true,
-						'fetchSchema': true,
-						'idGenerator': true,
-						'allowsMultipleResponses': true,
-						'junk': true,
-					});
+				assert.throws(function() {
+						new MessageHandler({
+							// don't provide this: 'router': true,
+							'fetchSchema': true,
+							'idGenerator': true,
+							'allowsMultipleResponses': true,
+							'junk': true,
+						});
+					}
 				);
 			});
 			it('should not throw an exception if the "fetchSchema" parameter is null or undefined', function() {
-				assert.doesNotThrow(
-					var handler = new JMP.MessageHandler({
-						'router': true,
-						// don't provide this: 'fetchSchema': true,
-						'idGenerator': true,
-						'allowsMultipleResponses': true,
-						'junk': true,
-					});
+				assert.doesNotThrow(function() {
+						new MessageHandler({
+							'router': true,
+							// don't provide this: 'fetchSchema': true,
+							'idGenerator': true,
+							'allowsMultipleResponses': true,
+							'junk': true,
+						});
+					}
 				);
 			});
 			it('should not throw an exception if the "idGenerator" parameter is null or undefined', function() {
-				assert.doesNotThrow(
-					var handler = new JMP.MessageHandler({
-						'router': true,
-						'fetchSchema': true,
-						// don't provide this: 'idGenerator': true,
-						'allowsMultipleResponses': true,
-						'junk': true,
-					});
+				assert.doesNotThrow(function() {
+						new MessageHandler({
+							'router': true,
+							'fetchSchema': true,
+							// don't provide this: 'idGenerator': true,
+							'allowsMultipleResponses': true,
+							'junk': true,
+						});
+					}
 				);
 			});
 			it("should default the 'allowsMultipleResponses' parameter to true", function() {
 				var handler;
-				assert.doesNotThrow(
-					handler = new JMP.MessageHandler({
-						'router': true,
-						'fetchSchema': true,
-						'idGenerator': true,
-						// don't provide this: 'allowsMultipleResponses': true,
-						'junk': true,
-					});
+				assert.doesNotThrow(function() {
+						handler = new MessageHandler({
+							'router': true,
+							'fetchSchema': true,
+							'idGenerator': true,
+							// don't provide this: 'allowsMultipleResponses': true,
+							'junk': true,
+						});
+					}
 				);
 				
 				// Still should be set!
@@ -85,7 +91,7 @@ describe('JSONMessageProtocol', function() {
 		
 		describe('HandleMessage', function() {
 			var nextId = 1;
-			var handler = new JMP.MessageHandler({
+			var handler = new MessageHandler({
 				'router': function(messageType, message, callback) {
 					switch (messageType) {
 						case "echo":
@@ -112,7 +118,7 @@ describe('JSONMessageProtocol', function() {
 				'allowsMultipleResponses': true,
 			});
 				
-			it('should take a string and a callback as parameters', function(done) {
+			it('should take a string and a callback as parameters', function() {
 				assert.equal(handler.HandleMessage.length, 2);
 			});
 			it("should send an error if the string is not JSON", function(done) {
@@ -127,9 +133,11 @@ describe('JSONMessageProtocol', function() {
 				};
 				handler.HandleMessage(json, function(err, message) {
 					assert(err);
+					done();
 				});
-				
-				json = {
+			});
+			it("should send an error if the 't' field is not an integer or string", function(done) {
+				var json = {
 					t: { 'oops': "It's an object" },
 				};
 				handler.HandleMessage(json, function(err, message) {
@@ -161,6 +169,16 @@ describe('JSONMessageProtocol', function() {
 				var json = {
 					t: "echo",
 					r: { 'oops': "It's an object" },
+				};
+				handler.HandleMessage(json, function(err, message) {
+					assert(err);
+					done();
+				});
+			});
+			it("should send an error if there are unknown fields", function(done) {
+				var json = {
+					t: "echo",
+					junk: true
 				};
 				handler.HandleMessage(json, function(err, message) {
 					assert(err);
