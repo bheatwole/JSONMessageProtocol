@@ -21,5 +21,9 @@
   "license": "BSD",
   "bugs": {
     "url": "https://github.com/bheatwole/JSONMessageProtocol/issues"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
   }
 }
