@@ -1,0 +1,25 @@
+{
+  "name": "JSONMessageProtocol",
+  "version": "0.0.1",
+  "description": "Protocol for sending, receiving and validating messages that are passed using the JSON format.",
+  "main": "lib/main.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bheatwole/JSONMessageProtocol.git"
+  },
+  "keywords": [
+    "JSON",
+    "message"
+  ],
+  "author": "Benjamin Heatwole",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/bheatwole/JSONMessageProtocol/issues"
+  }
+}
