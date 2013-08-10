@@ -51,3 +51,40 @@ the data being transmitted. It will be validated against the schema retrieved wh
 Below is the actual JSON-Schema used to validate the root message.
 
 	Not Yet Implemented
+	
+## MessageHandler
+
+### Options
+These are the options that may be passed to the MessageHandler constructor. The options may be read or set after the
+instance is constructed using the name of the option.
+
+#### router
+Specifies a function that will be called to route a message once it has passed validation. The signature of the function
+must be:
+	function(messageType, message, callback);
+Parameters:
+	messageType: The value of the Type ('t') field from the message. This is how the router should determine what code to
+		run.
+	message: The value of the Data ('d') field from the message. The router will typically pass this on to the function.
+	callback: A function with the signature: callback(err, responseType, responseData). The router should call this 
+		callback with any response to the original message. The 'err' parameter will be passed on to the code that read
+		the message. If 'responseType' has a value, a response message with the appropriate ID will be created. If
+		'responseData' also has a value, the Data ('d') field of the response message will be filled in. If the router
+		does not call the callback, the message will be dropped.
+
+#### fetchSchema
+Specifies a function that will be called to retrieve the schema for a particular messageType. If no function is provided
+the contents of all messages will be passed to the router with no validataion. The signature of the function must be:
+	function(messageType, callback);
+Parameters:
+	messageType: The value of the Type ('t') field from the message. This is how the function should determine what
+		schema to load.
+	callback: A function with the signature: callback(err, schema). fetchSchema should call this function with the
+		results of the schema lookup for the type. Providing a value for the 'err' parameter will stop message handling.
+		The 'schema' parameter may either be a javascript object, a JSON string or null. If the 'schema' parameter is null
+		no schema validation will be performed. Otherwise the Data ('d') field of the message will be validated against
+		the returned schema. If fetchSchema does not call this callback, the message will be dropped.
+
+#### idGenerator
+Specifies a sychronous function that will be called to generate the next message ID. The function should not take any
+parameters and should return an integer or string that uniquely identifies the message.

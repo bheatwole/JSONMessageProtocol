@@ -21,19 +21,16 @@ describe('JSONMessageProtocol', function() {
 					'router': true,
 					'fetchSchema': true,
 					'idGenerator': true,
-					'allowsMultipleResponses': true,
 					'junk': true,
 				});
 				
 				assert(handler);
 				assert(handler.HandleMessage);
 				assert.strictEqual(typeof(handler.HandleMessage), "function");
-				assert(handler.options);
-				assert(handler.options.router);
-				assert(handler.options.fetchSchema);
-				assert(handler.options.idGenerator);
-				assert(handler.options.allowsMultipleResponses);
-				assert(handler.options.junk);
+				assert(handler);
+				assert(handler.router);
+				assert(handler.fetchSchema);
+				assert(handler.idGenerator);
 			});
 			it('should throw an exception if the "router" parameter is null or undefined', function() {
 				assert.throws(function() {
@@ -41,7 +38,6 @@ describe('JSONMessageProtocol', function() {
 							// don't provide this: 'router': true,
 							'fetchSchema': true,
 							'idGenerator': true,
-							'allowsMultipleResponses': true,
 							'junk': true,
 						});
 					}
@@ -53,7 +49,6 @@ describe('JSONMessageProtocol', function() {
 							'router': true,
 							// don't provide this: 'fetchSchema': true,
 							'idGenerator': true,
-							'allowsMultipleResponses': true,
 							'junk': true,
 						});
 					}
@@ -65,27 +60,10 @@ describe('JSONMessageProtocol', function() {
 							'router': true,
 							'fetchSchema': true,
 							// don't provide this: 'idGenerator': true,
-							'allowsMultipleResponses': true,
 							'junk': true,
 						});
 					}
 				);
-			});
-			it("should default the 'allowsMultipleResponses' parameter to true", function() {
-				var handler;
-				assert.doesNotThrow(function() {
-						handler = new MessageHandler({
-							'router': true,
-							'fetchSchema': true,
-							'idGenerator': true,
-							// don't provide this: 'allowsMultipleResponses': true,
-							'junk': true,
-						});
-					}
-				);
-				
-				// Still should be set!
-				assert(handler.options.allowsMultipleResponses);
 			});
 		});
 		
@@ -95,7 +73,9 @@ describe('JSONMessageProtocol', function() {
 				'router': function(messageType, message, callback) {
 					switch (messageType) {
 						case "echo":
-							callback(null, message);
+							message.pong = message.ping;
+							delete message.ping;
+							callback(null, "echo", message);
 							break;
 						
 						default:
@@ -106,7 +86,17 @@ describe('JSONMessageProtocol', function() {
 				'fetchSchema': function(messageType, callback) {
 					switch (messageType) {
 						case "echo":
-							callback(null, "need to fill this in");
+							callback(null, {
+								"$schema": "http://json-schema.org/draft-04/schema#",
+								"type": "object",
+								"properties": {
+									"ping": {
+										"type": "string",
+									},
+								},
+								"additionalProperties": false,
+								"required": [ "ping" ]
+							});
 							break;
 						
 						default:
@@ -114,8 +104,7 @@ describe('JSONMessageProtocol', function() {
 							break;
 					}
 				},
-				'idGenerator': function(callback) { callback(null, nextId++); },
-				'allowsMultipleResponses': true,
+				'idGenerator': function() { return nextId++; },
 			});
 				
 			it('should take a string and a callback as parameters', function() {
@@ -185,7 +174,7 @@ describe('JSONMessageProtocol', function() {
 					done();
 				});
 			});
-			it("should send an error if fetchSchema returns an error.", function(done) {
+			it("should send an error if fetchSchema returns an error", function(done) {
 				var json = {
 					t: "unknown",
 				};
@@ -195,16 +184,87 @@ describe('JSONMessageProtocol', function() {
 				});
 			});
 			it("should send an error if the 'd' field does not pass schema validation", function(done) {
+				var json = {
+					t: "echo",
+					d: {
+						"pong": "The key should not validate"
+					}
+				};
+				handler.HandleMessage(json, function(err, message) {
+					assert(err);
+					done();
+				});
 			});
 			it("should pass the message type and 'd' field to the router function", function(done) {
+				var json = {
+					t: "echo",
+					d: {
+						"ping": "A message to validate"
+					}
+				};
+				handler.HandleMessage(json, function(err, message) {
+					assert.strictEqual(err, null);
+					assert.equal(message.d.pong, "A message to validate");
+					done();
+				});
 			});
 			it("should send an error if the router function returns an error", function(done) {
+				var badHandler = new MessageHandler({
+					'router': function(a, b, callback) { callback('error'); },
+					'fetchSchema': handler.fetchSchema,
+					'idGenerator': handler.idGenerator,
+				});
+			
+				var json = {
+					t: "echo",
+					d: {
+						"ping": "A message to validate"
+					}
+				};
+				badHandler.HandleMessage(json, function(err, message) {
+					assert(err);
+					done();
+				});
 			});
 			it("should send a message if the router function returns a message", function(done) {
+				var json = {
+					t: "echo",
+					d: {
+						"ping": "A message to validate"
+					}
+				};
+				handler.HandleMessage(json, function(err, message) {
+					assert.strictEqual(err, null);
+					assert.equal(message.d.pong, "A message to validate");
+					done();
+				});
 			});
 			it("should assign a message ID if the idGenerator is not null", function(done) {
+				var json = {
+					t: "echo",
+					d: {
+						"ping": "A message to validate"
+					}
+				};
+				handler.HandleMessage(json, function(err, message) {
+					assert.strictEqual(err, null);
+					assert(message.i > 0);
+					done();
+				});
 			});
 			it("should include a reply ID if the original message included a message ID", function(done) {
+				var json = {
+					i: "abcdef",
+					t: "echo",
+					d: {
+						"ping": "A message to validate"
+					}
+				};
+				handler.HandleMessage(json, function(err, message) {
+					assert.strictEqual(err, null);
+					assert.equal(message.r, "abcdef");
+					done();
+				});
 			});
 		});
 	});
