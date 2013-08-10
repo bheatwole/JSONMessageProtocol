@@ -50,7 +50,29 @@ the data being transmitted. It will be validated against the schema retrieved wh
 ## Schema
 Below is the actual JSON-Schema used to validate the root message.
 
-	Not Yet Implemented
+	{
+		"$schema": "http://json-schema.org/draft-04/schema#",
+		"type": "object",
+		"properties": {
+			"v": {
+				"enum": [ "1.0" ],
+			},
+			"i": {
+				"type": [ "integer", "string"],
+			},
+			"r": {
+				"type": [ "integer", "string"],
+			},
+			"t": {
+				"type": [ "integer", "string"],
+			},
+			"d": {
+				"type": "object",
+			},
+		},
+		"additionalProperties": false,
+		"required": [ "t" ]
+	}
 	
 ## MessageHandler
 
@@ -61,8 +83,11 @@ instance is constructed using the name of the option.
 #### router
 Specifies a function that will be called to route a message once it has passed validation. The signature of the function
 must be:
+
 	function(messageType, message, callback);
+	
 Parameters:
+
 	messageType: The value of the Type ('t') field from the message. This is how the router should determine what code to
 		run.
 	message: The value of the Data ('d') field from the message. The router will typically pass this on to the function.
@@ -75,8 +100,11 @@ Parameters:
 #### fetchSchema
 Specifies a function that will be called to retrieve the schema for a particular messageType. If no function is provided
 the contents of all messages will be passed to the router with no validataion. The signature of the function must be:
+
 	function(messageType, callback);
+	
 Parameters:
+
 	messageType: The value of the Type ('t') field from the message. This is how the function should determine what
 		schema to load.
 	callback: A function with the signature: callback(err, schema). fetchSchema should call this function with the
