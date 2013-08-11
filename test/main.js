@@ -274,6 +274,18 @@ describe('JSONMessageProtocol', function() {
 					done();
 				});
 			});
+			it("should pass a null message if the 'd' field is not specified", function(done) {
+				var noSchemaHandler = new MessageHandler({
+					'router': function(type, message, cb) { assert.strictEqual(message, null); done(); },
+					'fetchSchema': function (type, cb) { cb(null, null); },
+					'idGenerator': handler.idGenerator,
+				});
+			
+				var json = {
+					t: "echo",
+				};
+				noSchemaHandler.HandleMessage(json, null);
+			});
 		});
 	});
 });
