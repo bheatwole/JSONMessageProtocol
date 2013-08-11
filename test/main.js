@@ -254,6 +254,26 @@ describe('JSONMessageProtocol', function() {
 					done();
 				});
 			});
+			it("should skip validation if fetchSchema returns null", function(done) {
+				var noSchemaHandler = new MessageHandler({
+					'router': handler.router,
+					'fetchSchema': function (type, cb) { cb(null, null); },
+					'idGenerator': handler.idGenerator,
+				});
+			
+				var json = {
+					t: "echo",
+					d: {
+						"hmmm": "normally this would not validate because 'd' is supposed to be a string."
+					}
+				};
+				noSchemaHandler.HandleMessage(json, function(err, message) {
+					assert.strictEqual(err, null);
+					assert(message.d);
+					assert(message.d.hmmm);
+					done();
+				});
+			});
 		});
 	});
 });
