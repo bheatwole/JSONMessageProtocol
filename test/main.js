@@ -73,8 +73,6 @@ describe('JSONMessageProtocol', function() {
 				'router': function(messageType, message, callback) {
 					switch (messageType) {
 						case "echo":
-							message.pong = message.ping;
-							delete message.ping;
 							callback(null, "echo", message);
 							break;
 						
@@ -90,12 +88,12 @@ describe('JSONMessageProtocol', function() {
 								"$schema": "http://json-schema.org/draft-04/schema#",
 								"type": "object",
 								"properties": {
-									"ping": {
-										"type": "string",
-									},
+									"d": {
+										"type": "string"
+									}
 								},
-								"additionalProperties": false,
-								"required": [ "ping" ]
+								"additionalProperties": true,
+								"required": [ "d" ]
 							});
 							break;
 						
@@ -187,7 +185,7 @@ describe('JSONMessageProtocol', function() {
 				var json = {
 					t: "echo",
 					d: {
-						"pong": "The key should not validate"
+						"opps": "This is an object, not a string; so it should not validate."
 					}
 				};
 				handler.HandleMessage(json, function(err, message) {
@@ -198,13 +196,11 @@ describe('JSONMessageProtocol', function() {
 			it("should pass the message type and 'd' field to the router function", function(done) {
 				var json = {
 					t: "echo",
-					d: {
-						"ping": "A message to validate"
-					}
+					d: "A message to validate"
 				};
 				handler.HandleMessage(json, function(err, message) {
 					assert.strictEqual(err, null);
-					assert.equal(message.d.pong, "A message to validate");
+					assert.equal(message.d, "A message to validate");
 					done();
 				});
 			});
@@ -217,9 +213,7 @@ describe('JSONMessageProtocol', function() {
 			
 				var json = {
 					t: "echo",
-					d: {
-						"ping": "A message to validate"
-					}
+					d: "A message to validate"
 				};
 				badHandler.HandleMessage(json, function(err, message) {
 					assert(err);
@@ -229,22 +223,18 @@ describe('JSONMessageProtocol', function() {
 			it("should send a message if the router function returns a message", function(done) {
 				var json = {
 					t: "echo",
-					d: {
-						"ping": "A message to validate"
-					}
+					d: "A message to validate"
 				};
 				handler.HandleMessage(json, function(err, message) {
 					assert.strictEqual(err, null);
-					assert.equal(message.d.pong, "A message to validate");
+					assert.equal(message.d, "A message to validate");
 					done();
 				});
 			});
 			it("should assign a message ID if the idGenerator is not null", function(done) {
 				var json = {
 					t: "echo",
-					d: {
-						"ping": "A message to validate"
-					}
+					d: "A message to validate"
 				};
 				handler.HandleMessage(json, function(err, message) {
 					assert.strictEqual(err, null);
@@ -256,9 +246,7 @@ describe('JSONMessageProtocol', function() {
 				var json = {
 					i: "abcdef",
 					t: "echo",
-					d: {
-						"ping": "A message to validate"
-					}
+					d: "A message to validate"
 				};
 				handler.HandleMessage(json, function(err, message) {
 					assert.strictEqual(err, null);

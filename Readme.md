@@ -55,25 +55,28 @@ Below is the actual JSON-Schema used to validate the root message.
 		"type": "object",
 		"properties": {
 			"v": {
-				"enum": [ "1.0" ],
+				"enum": [ "1.0" ]
 			},
 			"i": {
-				"type": [ "integer", "string"],
+				"type": [ "integer", "string"]
 			},
 			"r": {
-				"type": [ "integer", "string"],
+				"type": [ "integer", "string"]
 			},
 			"t": {
-				"type": [ "integer", "string"],
+				"type": [ "integer", "string"]
 			},
 			"d": {
-				"type": "object",
-			},
+				"type": [ "array", "boolean", "integer", "null", "number", "object", "string" ]
+			}
 		},
 		"additionalProperties": false,
 		"required": [ "t" ]
 	}
-	
+
+# node.js Implementation
+Below are some of the details from the node.js implementation of this protocol.
+
 ## MessageHandler
 
 ### Options
@@ -110,8 +113,11 @@ Parameters:
 	callback: A function with the signature: callback(err, schema). fetchSchema should call this function with the
 		results of the schema lookup for the type. Providing a value for the 'err' parameter will stop message handling.
 		The 'schema' parameter may either be a javascript object, a JSON string or null. If the 'schema' parameter is null
-		no schema validation will be performed. Otherwise the Data ('d') field of the message will be validated against
-		the returned schema. If fetchSchema does not call this callback, the message will be dropped.
+		no further schema validation will be performed on the message. Otherwise the entire message will be validated
+		against the returned schema. This means that most schemas will duplicate at least a part of the JSON Message
+		Protocol schema, but this is preferrable to storing out-of-band data indicating whether the Data ('d') field is
+		required, optional or disallowed for each message type. If fetchSchema does not call this callback, the message
+		will be dropped.
 
 #### idGenerator
 Specifies a sychronous function that will be called to generate the next message ID. The function should not take any
