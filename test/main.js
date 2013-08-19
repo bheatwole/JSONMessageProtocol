@@ -6,6 +6,9 @@ describe('JSONMessageProtocol', function() {
 		it('should return an object containing a MessageHandler class', function() {
 			assert(JMP.MessageHandler);
 			assert.strictEqual(typeof(JMP.MessageHandler), "function");
+			assert(JMP.SchemaCache);
+			assert(JMP.SchemaDirectoryWatcher);
+			assert(JMP.SimpleHTTPServer);
 		});
 	});
 	
